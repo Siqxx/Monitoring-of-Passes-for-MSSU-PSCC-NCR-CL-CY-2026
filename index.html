@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html>
+<head>
+
+<title>Monitoring of Passes for CY 2026</title>
+
+<style>
+
+body{
+font-family: Arial;
+}
+
+table{
+border-collapse: collapse;
+width:100%;
+}
+
+th, td{
+border:1px solid black;
+padding:8px;
+text-align:center;
+}
+
+th{
+background-color:#d9d9d9;
+}
+
+</style>
+
+</head>
+
+<body>
+
+<h2>Monitoring of Passes for CY 2026</h2>
+
+<input type="text" id="search" placeholder="Search Personnel" onkeyup="searchName()">
+
+<br><br>
+
+<table id="passTable">
+
+<tr>
+<th>Month</th>
+<th>Date</th>
+<th>Name of Personnel</th>
+<th>Duration</th>
+<th>Remarks</th>
+</tr>
+
+</table>
+
+<br>
+
+<input type="text" id="month" placeholder="Month">
+<input type="text" id="date" placeholder="Date">
+<input type="text" id="name" placeholder="Name of Personnel">
+<input type="text" id="duration" placeholder="Duration">
+
+<select id="remarks">
+<option>On Leave</option>
+<option>Can Avail for Passes</option>
+<option>Not yet Available to Avail</option>
+</select>
+
+<button onclick="addRow()">Add Record</button>
+
+<script>
+
+function addRow(){
+
+let table = document.getElementById("passTable");
+
+let row = table.insertRow();
+
+row.insertCell(0).innerHTML = document.getElementById("month").value;
+row.insertCell(1).innerHTML = document.getElementById("date").value;
+row.insertCell(2).innerHTML = document.getElementById("name").value;
+row.insertCell(3).innerHTML = document.getElementById("duration").value;
+row.insertCell(4).innerHTML = document.getElementById("remarks").value;
+
+}
+
+function searchName(){
+
+let input = document.getElementById("search").value.toLowerCase();
+let table = document.getElementById("passTable");
+let rows = table.getElementsByTagName("tr");
+
+for(let i=1;i<rows.length;i++){
+
+let name = rows[i].cells[2].innerHTML.toLowerCase();
+
+if(name.includes(input)){
+rows[i].style.display="";
+}else{
+rows[i].style.display="none";
+}
+
+}
+
+}
+
+</script>
+
+</body>
+</html>
