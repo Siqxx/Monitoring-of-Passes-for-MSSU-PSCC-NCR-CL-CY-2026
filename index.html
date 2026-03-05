@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html>
+
 <head>
 
 <title>Monitoring of Passes for CY 2026</title>
@@ -7,22 +8,35 @@
 <style>
 
 body{
-font-family: Arial;
+font-family:Arial;
+margin:20px;
 }
 
 table{
-border-collapse: collapse;
+border-collapse:collapse;
 width:100%;
 }
 
-th, td{
+th,td{
 border:1px solid black;
 padding:8px;
 text-align:center;
 }
 
 th{
-background-color:#d9d9d9;
+background-color:#e6e6e6;
+}
+
+.onleave{
+background-color:#ff9999;
+}
+
+.available{
+background-color:#99ff99;
+}
+
+.notavailable{
+background-color:#ffff99;
 }
 
 </style>
@@ -32,6 +46,12 @@ background-color:#d9d9d9;
 <body>
 
 <h2>Monitoring of Passes for CY 2026</h2>
+
+<h3>Personnel Pass Status Dashboard</h3>
+
+<div id="dashboard"></div>
+
+<br>
 
 <input type="text" id="search" placeholder="Search Personnel" onkeyup="searchName()">
 
@@ -43,7 +63,7 @@ background-color:#d9d9d9;
 <th>Month</th>
 <th>Date</th>
 <th>Name of Personnel</th>
-<th>Duration</th>
+<th>Duration (Days)</th>
 <th>Remarks</th>
 </tr>
 
@@ -52,47 +72,169 @@ background-color:#d9d9d9;
 <br>
 
 <input type="text" id="month" placeholder="Month">
-<input type="text" id="date" placeholder="Date">
-<input type="text" id="name" placeholder="Name of Personnel">
-<input type="text" id="duration" placeholder="Duration">
+<input type="date" id="date">
 
-<select id="remarks">
-<option>On Leave</option>
-<option>Can Avail for Passes</option>
-<option>Not yet Available to Avail</option>
+<select id="name">
+
+<option>LCDR DENIS R RAPAL O-0412</option>
+<option>LTJG JUSTIN MARON F DEL GALLEGO O-1874</option>
+<option>LTJG CHARL DOMINIC H MALOLOT O-1949</option>
+<option>PO1 Lailani D Gloriani 005109</option>
+<option>PO2 Mark Anthony O Alvarez 006354</option>
+<option>Ramon Villanueva</option>
+<option>Jose Ramirez</option>
+<option>Daniel Cruz</option>
+<option>Mark Bautista</option>
+
 </select>
+
+<input type="number" id="duration" placeholder="Duration">
 
 <button onclick="addRow()">Add Record</button>
 
+<button onclick="exportExcel()">Export Excel</button>
+
+<button onclick="monthlyReport()">Monthly Report</button>
+
 <script>
+
+window.onload=function(){
+
+loadData();
+updateRemarks();
+updateDashboard();
+
+}
 
 function addRow(){
 
-let table = document.getElementById("passTable");
+let table=document.getElementById("passTable");
 
-let row = table.insertRow();
+let month=document.getElementById("month").value;
+let date=document.getElementById("date").value;
+let name=document.getElementById("name").value;
+let duration=parseInt(document.getElementById("duration").value);
 
-row.insertCell(0).innerHTML = document.getElementById("month").value;
-row.insertCell(1).innerHTML = document.getElementById("date").value;
-row.insertCell(2).innerHTML = document.getElementById("name").value;
-row.insertCell(3).innerHTML = document.getElementById("duration").value;
-row.insertCell(4).innerHTML = document.getElementById("remarks").value;
+let startDate=new Date(date);
+let today=new Date();
+
+let endDate=new Date(startDate);
+endDate.setDate(endDate.getDate()+duration);
+
+let remark="";
+let rowClass="";
+
+if(today>=startDate && today<=endDate){
+
+remark="On Leave";
+rowClass="onleave";
+
+}
+
+else{
+
+let nextAvail=new Date(endDate);
+nextAvail.setDate(nextAvail.getDate()+3);
+
+if(today>=nextAvail){
+
+remark="Can Avail for Passes";
+rowClass="available";
+
+}
+
+else{
+
+remark="Not yet Available to Avail";
+rowClass="notavailable";
+
+}
+
+}
+
+let row=table.insertRow();
+
+row.className=rowClass;
+
+row.insertCell(0).innerHTML=month;
+row.insertCell(1).innerHTML=date;
+row.insertCell(2).innerHTML=name;
+row.insertCell(3).innerHTML=duration;
+row.insertCell(4).innerHTML=remark;
+
+saveData();
+updateDashboard();
+
+}
+
+function updateRemarks(){
+
+let table=document.getElementById("passTable");
+let rows=table.getElementsByTagName("tr");
+let today=new Date();
+
+for(let i=1;i<rows.length;i++){
+
+let startDate=new Date(rows[i].cells[1].innerHTML);
+let duration=parseInt(rows[i].cells[3].innerHTML);
+
+let endDate=new Date(startDate);
+endDate.setDate(endDate.getDate()+duration);
+
+let remark="";
+let rowClass="";
+
+if(today>=startDate && today<=endDate){
+
+remark="On Leave";
+rowClass="onleave";
+
+}
+
+else{
+
+let nextAvail=new Date(endDate);
+nextAvail.setDate(nextAvail.getDate()+3);
+
+if(today>=nextAvail){
+
+remark="Can Avail for Passes";
+rowClass="available";
+
+}
+
+else{
+
+remark="Not yet Available to Avail";
+rowClass="notavailable";
+
+}
+
+}
+
+rows[i].cells[4].innerHTML=remark;
+rows[i].className=rowClass;
+
+}
+
+saveData();
 
 }
 
 function searchName(){
 
-let input = document.getElementById("search").value.toLowerCase();
-let table = document.getElementById("passTable");
-let rows = table.getElementsByTagName("tr");
+let input=document.getElementById("search").value.toLowerCase();
+let table=document.getElementById("passTable");
+let rows=table.getElementsByTagName("tr");
 
 for(let i=1;i<rows.length;i++){
 
-let name = rows[i].cells[2].innerHTML.toLowerCase();
+let name=rows[i].cells[2].innerHTML.toLowerCase();
 
 if(name.includes(input)){
 rows[i].style.display="";
-}else{
+}
+else{
 rows[i].style.display="none";
 }
 
@@ -100,7 +242,106 @@ rows[i].style.display="none";
 
 }
 
+function exportExcel(){
+
+let table=document.getElementById("passTable").outerHTML;
+
+let url='data:application/vnd.ms-excel,'+encodeURIComponent(table);
+
+let link=document.createElement("a");
+
+link.href=url;
+link.download="Monitoring_of_Passes_2026.xls";
+
+link.click();
+
+}
+
+function monthlyReport(){
+
+let table=document.getElementById("passTable");
+let rows=table.getElementsByTagName("tr");
+
+let report={};
+
+for(let i=1;i<rows.length;i++){
+
+let month=rows[i].cells[0].innerHTML;
+
+if(!report[month]){
+report[month]=0;
+}
+
+report[month]++;
+
+}
+
+let result="Monthly Pass Report\n\n";
+
+for(let m in report){
+
+result+=m+" : "+report[m]+" passes\n";
+
+}
+
+alert(result);
+
+}
+
+function updateDashboard(){
+
+let table=document.getElementById("passTable");
+let rows=table.getElementsByTagName("tr");
+
+let available=[];
+let onleave=[];
+let waiting=[];
+
+for(let i=1;i<rows.length;i++){
+
+let name=rows[i].cells[2].innerHTML;
+let remark=rows[i].cells[4].innerHTML;
+
+if(remark=="Can Avail for Passes"){
+available.push(name);
+}
+
+if(remark=="On Leave"){
+onleave.push(name);
+}
+
+if(remark=="Not yet Available to Avail"){
+waiting.push(name);
+}
+
+}
+
+document.getElementById("dashboard").innerHTML=
+
+"<b>Available for Pass:</b> "+available.join(", ")+"<br><br>"+
+"<b>Currently On Leave:</b> "+onleave.join(", ")+"<br><br>"+
+"<b>Not Yet Eligible:</b> "+waiting.join(", ");
+
+}
+
+function saveData(){
+
+localStorage.setItem("passTableData",document.getElementById("passTable").innerHTML);
+
+}
+
+function loadData(){
+
+let data=localStorage.getItem("passTableData");
+
+if(data){
+document.getElementById("passTable").innerHTML=data;
+}
+
+}
+
 </script>
 
 </body>
+
 </html>
